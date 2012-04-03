@@ -112,6 +112,15 @@ void KMLOverlayUI::AddFile( wxString filename, bool visible )
       m_pCheckListBox->Check( m_pCheckListBox->GetCount()-1, visible );
 }
 
+void KMLOverlayUI::Clear()
+{
+      for ( int i=m_pCheckListBox->GetCount()-1; i>=0; i-- ) {
+            m_pCheckListBox->Delete( i );
+            m_pFactory->Delete( i );
+      }
+      UpdateButtonsState();
+}
+
 wxString KMLOverlayUI::GetFilename( int idx )
 {
       return m_pFactory->GetFilename( idx );

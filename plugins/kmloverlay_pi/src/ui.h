@@ -50,6 +50,7 @@ public:
       bool RenderGLOverlay( wxGLContext *pcontext, PlugIn_ViewPort *vp );
 
       void AddFile( wxString filename, bool visible );
+      void Clear();
       wxString GetFilename( int idx );
       bool GetVisibility( int idx );
       int GetCount();

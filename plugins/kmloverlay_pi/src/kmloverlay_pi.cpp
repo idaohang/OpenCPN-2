@@ -35,6 +35,8 @@
 #include "kmloverlay_pi.h"
 #include "icons.h"
 #include "prefdlg.h"
+#include <wx/dir.h>
+#include <wx/filename.h>
 
 // the class factories, used to create and destroy instances of the PlugIn
 
@@ -55,7 +57,7 @@ extern "C" DECL_EXP void destroy_pi(opencpn_plugin* p)
 //---------------------------------------------------------------------------------------------------------
 
 kmloverlay_pi::kmloverlay_pi(void *ppimgr)
-      : opencpn_plugin_17(ppimgr)
+      : opencpn_plugin_17(ppimgr), wxTimer(this)
 {
       // Create the PlugIn icons
       initialize_images();
@@ -88,13 +90,14 @@ int kmloverlay_pi::Init(void)
            WANTS_OPENGL_OVERLAY_CALLBACK |
            WANTS_TOOLBAR_CALLBACK    |
            INSTALLS_TOOLBAR_TOOL     |
-// nothing yet //           WANTS_PREFERENCES         |
+           WANTS_PREFERENCES         |
            WANTS_CONFIG
             );
 }
 
 bool kmloverlay_pi::DeInit(void)
 {
+      Stop();
       SaveConfig();
       if ( m_puserinput )
       {
@@ -194,7 +197,7 @@ bool kmloverlay_pi::RenderGLOverlay( wxGLContext *pcontext, PlugIn_ViewPort *vp 
 
 void kmloverlay_pi::ShowPreferencesDialog( wxWindow* parent )
 {
-      KMLOverlayPreferencesDialog *dialog = new KMLOverlayPreferencesDialog( parent, wxID_ANY, m_interval );
+      KMLOverlayPreferencesDialog *dialog = new KMLOverlayPreferencesDialog( parent, wxID_ANY, m_interval, m_polldir );
 
       if ( dialog->ShowModal() == wxID_OK )
       {
@@ -203,6 +206,7 @@ void kmloverlay_pi::ShowPreferencesDialog( wxWindow* parent )
             dialog->SaveKMLOverlayConfig();
 
             m_interval = dialog->m_interval;
+            m_polldir = dialog->m_polldir;
             SaveConfig();
             ApplyConfig();
       }
@@ -218,6 +222,7 @@ bool kmloverlay_pi::LoadConfig(void)
             pConf->SetPath( _T("/PlugIns/KMLOverlay") );
 
             pConf->Read( _T("Interval"), &m_interval, -1 );
+            pConf->Read( _T("PollDir"), &m_polldir, _T("") );
             int d_cnt;
             pConf->Read( _T("FileCount"), &d_cnt, -1 );
             for ( int i = 0; i < d_cnt; i++ )
@@ -244,6 +249,7 @@ bool kmloverlay_pi::SaveConfig(void)
             pConf->SetPath( _T("/PlugIns/KMLOverlay") );
 
             pConf->Write( _T("Interval"), m_interval );
+            pConf->Write( _T("PollDir"), m_polldir );
             pConf->Write( _T("FileCount" ), m_puserinput->GetCount() );
             for ( int i = 0; i < m_puserinput->GetCount(); i++ )
             {
@@ -260,8 +266,33 @@ bool kmloverlay_pi::SaveConfig(void)
 
 void kmloverlay_pi::ApplyConfig(void)
 {
-      if ( m_interval != -1 )
+      if ( m_interval != -1 && m_polldir )
       {
+            Notify();
+            if (! Start( m_interval*60000, wxTIMER_CONTINUOUS ) )
+                  wxLogMessage(_T("kmloverlay_pi: Timer start failed!"));
+      }
+}
+
+void kmloverlay_pi::Notify()
+{
+      if ( m_puserinput ) {
+            wxDir dir(m_polldir);
+
+            if ( dir.IsOpened() ) {
+                  m_puserinput->Clear();
+                  wxString filename;
+                  wxFileName fname;
+
+                  bool cont = dir.GetFirst( &filename, _T("*.kml"), wxDIR_FILES );
+                  while ( cont ) {
+printf("%s\n", (const char *)filename.mb_str());
+                        fname.Assign(m_polldir, filename );
+                        m_puserinput->AddFile( fname.GetFullPath(), true );
+
+                        cont = dir.GetNext(&filename);
+                  }
+            }
       }
 }
 

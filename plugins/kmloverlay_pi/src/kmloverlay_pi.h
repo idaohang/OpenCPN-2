@@ -52,7 +52,7 @@
 //    The plugin class definition
 //----------------------------------------------------------------------------------------------------------
 
-class kmloverlay_pi : public opencpn_plugin_17
+class kmloverlay_pi : public opencpn_plugin_17, wxTimer
 {
 public:
       kmloverlay_pi(void *ppimgr);
@@ -77,6 +77,8 @@ public:
 
       void ShowPreferencesDialog( wxWindow* parent );
 
+      void Notify();
+
 private:
       bool LoadConfig(void);
       bool SaveConfig(void);
@@ -87,6 +89,7 @@ private:
       int              m_toolbar_item_id;
       KMLOverlayUI    *m_puserinput;
       int              m_interval;
+      wxString         m_polldir;
 
 };
 

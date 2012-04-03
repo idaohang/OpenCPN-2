@@ -36,20 +36,24 @@
 #endif //precompiled headers
 
 #include <wx/spinctrl.h>
+#include <wx/filepicker.h>
 
 class KMLOverlayPreferencesDialog : public wxDialog
 {
 public:
-      KMLOverlayPreferencesDialog( wxWindow *pparent, wxWindowID id, int interval );
+      KMLOverlayPreferencesDialog( wxWindow *pparent, wxWindowID id, int interval, wxString polldir );
       ~KMLOverlayPreferencesDialog() {}
 
       void OnCloseDialog(wxCloseEvent& event);
       void SaveKMLOverlayConfig();
 
-      wxSpinCtrl       *m_pInterval;
-      int m_interval;
+      int               m_interval;
+      wxString          m_polldir;
 
 private:
+      wxSpinCtrl       *m_pInterval;
+      wxDirPickerCtrl  *m_pPolldir;
+
 };
 
 #endif

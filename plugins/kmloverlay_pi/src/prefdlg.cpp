@@ -38,7 +38,7 @@
  *
  *************************************************************************/
 
-KMLOverlayPreferencesDialog::KMLOverlayPreferencesDialog( wxWindow *parent, wxWindowID id, int interval )
+KMLOverlayPreferencesDialog::KMLOverlayPreferencesDialog( wxWindow *parent, wxWindowID id, int interval, wxString polldir )
       :wxDialog( parent, id, _("KML overlay preferences"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE )
 {
       Connect( wxEVT_CLOSE_WINDOW, wxCloseEventHandler( KMLOverlayPreferencesDialog::OnCloseDialog ), NULL, this );
@@ -60,6 +60,12 @@ KMLOverlayPreferencesDialog::KMLOverlayPreferencesDialog( wxWindow *parent, wxWi
       m_pInterval = new wxSpinCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 60, interval );
       itemFlexGridSizer01->Add( m_pInterval, 1, wxALIGN_LEFT|wxALL, 2 );
 
+      wxStaticText* itemStaticText02 = new wxStaticText( this, wxID_ANY, _("Poll directory:"), wxDefaultPosition, wxDefaultSize, 0 );
+      itemFlexGridSizer01->Add( itemStaticText02, 0, wxEXPAND|wxALL, 2 );
+      m_polldir = polldir;
+      m_pPolldir = new wxDirPickerCtrl( this, wxID_ANY, polldir, _("Select a folder"), wxDefaultPosition, wxDefaultSize, wxDIRP_DIR_MUST_EXIST|wxDIRP_CHANGE_DIR );
+      itemFlexGridSizer01->Add( m_pPolldir, 1, wxALIGN_LEFT|wxALL, 2 );
+
       wxStdDialogButtonSizer* DialogButtonSizer = CreateStdDialogButtonSizer(wxOK|wxCANCEL);
       itemBoxSizerMainPanel->Add(DialogButtonSizer, 0, wxALIGN_RIGHT|wxALL, 5);
 
@@ -75,7 +81,7 @@ void KMLOverlayPreferencesDialog::OnCloseDialog(wxCloseEvent& event)
 
 void KMLOverlayPreferencesDialog::SaveKMLOverlayConfig()
 {
-//      m_filename = m_pFilename->GetPath();
       m_interval = m_pInterval->GetValue();
+      m_polldir = m_pPolldir->GetPath();
 }
 
